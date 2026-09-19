@@ -8,9 +8,11 @@ const require = createRequire(import.meta.url)
 const sharp = require(process.argv[2] || 'sharp')
 mkdirSync('node_modules/.cache', { recursive: true })
 const temp = resolve('node_modules/.cache/archive-preview.cjs')
-const doodle = readFileSync('src/components/YuriDoodle.jsx', 'utf8')
+const marker = readFileSync('src/components/MarkerTexture.jsx', 'utf8')
+writeFileSync('node_modules/.cache/marker-preview.cjs', transformSync(marker, {loader:'jsx',format:'cjs',jsx:'automatic'}).code)
+const doodle = readFileSync('src/components/YuriDoodle.jsx', 'utf8').replace("'./MarkerTexture'", "'./marker-preview.cjs'")
 writeFileSync('node_modules/.cache/yuri-preview.cjs', transformSync(doodle, {loader:'jsx',format:'cjs',jsx:'automatic'}).code)
-const source = readFileSync('src/components/EnvelopeArtwork.jsx', 'utf8').replace("'./YuriDoodle'", "'./yuri-preview.cjs'")
+const source = readFileSync('src/components/EnvelopeArtwork.jsx', 'utf8').replace("'./MarkerTexture'", "'./marker-preview.cjs'").replace("'./YuriDoodle'", "'./yuri-preview.cjs'")
 writeFileSync(temp, transformSync(source, {loader:'jsx',format:'cjs',jsx:'automatic'}).code)
 const React = require('react')
 const { renderToStaticMarkup } = require('react-dom/server')
@@ -28,10 +30,11 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" v
 <rect x="728" y="76" width="362" height="500" rx="5" fill="#754454" opacity=".12"/>
 <rect x="717" y="64" width="362" height="500" rx="5" fill="#f7f4f1" stroke="#d5c6cf"/>
 <path d="M717 64H1079V128L925 170H870L717 128Z" fill="url(#flap)"/><circle cx="898" cy="136" r="13" fill="#ebcad2" stroke="#986878"/><circle cx="898" cy="136" r="3" fill="#986878"/>
-<g color="#292832">${position(svgs[0], 746, 205, 120, 140)}${position(svgs[1], 864, 202, 115, 116)}${position(svgs[2], 872, 324, 170, 105)}</g>
+<g color="#754454">${position(svgs[0], 746, 205, 120, 140)}${position(svgs[1], 864, 202, 115, 116)}${position(svgs[2], 872, 324, 170, 105)}</g>
 <g fill="none" stroke="#b66e82" stroke-width="2"><path d="M1010 202c-12-18-29 1 0 18c29-17 12-36 0-18Z"/><path d="M748 398q15-35 30-3t30-3"/></g>
-<rect x="744" y="455" width="308" height="70" rx="2" fill="#ebcad255" stroke="#b66e82"/><text x="898" y="497" text-anchor="middle" fill="#754454" font-family="Georgia" font-style="italic" font-size="20">leave your mark to open</text>
+<rect x="744" y="455" width="308" height="70" rx="2" fill="#ebcad255" stroke="#b66e82"/><text x="898" y="497" text-anchor="middle" fill="#754454" font-family="Georgia" font-style="italic" font-size="20">tap or sign to open</text>
 </svg>`
 writeFileSync('public/images/archive-preview.svg', svg)
 await sharp(Buffer.from(svg)).png().toFile('public/images/archive-preview.png')
+
 

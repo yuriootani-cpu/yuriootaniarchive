@@ -263,3 +263,6 @@ button.header-seal { background:transparent;padding:0;cursor:pointer; }
 @keyframes signature-cue{0%,100%{opacity:.9}50%{opacity:.55}}
 @keyframes signature-trace{0%{stroke-dashoffset:100;opacity:0}20%{opacity:.75}65%,100%{stroke-dashoffset:0;opacity:.4}}
 @media(max-width:700px){.header-seal .monogram{width:48px;height:40px}}
+
+/* Plum marker ink keeps the character sketches in the stationery palette. */
+.envelope-doodles,.front-doodle,.about-art .doodle-borg-sleeping{color:var(--deep-rose)}

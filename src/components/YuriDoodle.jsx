@@ -1,6 +1,10 @@
+import { useId } from 'react'
+import MarkerTexture from './MarkerTexture'
+
 export default function YuriDoodle({ className = '' }) {
+  const inkId = useId().replace(/:/g, '') + '-marker'
   return <svg className={className} viewBox="0 0 180 120" role="img" aria-label="Yuri-inspired pen doodle looking down at a little Borg">
-    <g stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <MarkerTexture id={inkId}/><g filter={`url(#${inkId})`} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <path fill="currentColor" d="M29 70Q22 45 31 27Q37 12 61 15Q89 11 94 38L95 69L81 74L35 74Z"/>
       <path fill="var(--ivory)" d="M37 43L39 31L48 41L52 30L60 42L66 30L72 42L82 32L87 45L85 62Q76 79 59 75Q43 72 38 58Z"/>
       <path fill="none" d="M46 49q5-3 9 1M68 50q6-3 10 1"/>
@@ -17,3 +21,4 @@ export default function YuriDoodle({ className = '' }) {
     </g>
   </svg>
 }
+

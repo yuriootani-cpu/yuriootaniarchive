@@ -1,15 +1,17 @@
 import { useId } from 'react'
 import YuriDoodle from './YuriDoodle'
+import MarkerTexture from './MarkerTexture'
 
 export function EnvelopeDoodles() {
+  const inkId = useId().replace(/:/g, '') + '-marker'
   return <div className="envelope-doodles" aria-label="Little doodles of Yuri waving and Borg playing">
-    <svg className="doodle-yuri" viewBox="0 0 120 125" role="img" aria-label="Yuri waving hello"><g stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="doodle-yuri" viewBox="0 0 120 125" role="img" aria-label="Yuri waving hello"><MarkerTexture id={inkId}/><g filter={`url(#${inkId})`} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <path fill="currentColor" d="M25 67Q17 40 27 23Q41 10 61 16Q81 18 83 42L85 68L71 72L29 72Z"/>
       <path fill="var(--ivory)" d="M30 40L34 30L43 41L48 28L55 41L62 29L72 42L77 36L76 59Q68 75 51 70Q34 68 30 51Z"/>
       <path fill="none" d="M38 48l7-2M59 47l7 2M45 61q8 6 15-1M40 72L32 95L34 113M65 73L77 84L95 63M72 90L95 73M40 75L51 85L61 75M51 85L52 109M35 96L68 98L70 114M95 73L99 61L104 58L99 55L98 49L94 53L90 49L89 57L86 55L85 61L95 63M107 44l4-5M112 53l5-1"/>
       <ellipse cx="44" cy="52" rx="2" ry="4" fill="currentColor"/><ellipse cx="65" cy="53" rx="2" ry="4" fill="currentColor"/>
     </g></svg>
-    <svg className="doodle-borg-flying" viewBox="0 0 120 110" role="img" aria-label="Borg fluttering around a star"><g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="doodle-borg-flying" viewBox="0 0 120 110" role="img" aria-label="Borg fluttering around a star"><g filter={`url(#${inkId})`} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <path d="M35 71Q13 62 9 24Q28 35 40 56M84 72Q105 58 113 21Q90 30 79 56M31 72Q29 48 58 48Q87 46 89 72Q58 88 31 72ZM33 77Q58 89 87 77"/>
       <ellipse cx="43" cy="65" rx="4" ry="7"/><ellipse cx="76" cy="64" rx="4" ry="7"/><path d="M21 84l-7 5M27 94l-6 5M58 14l3 8 9 2-8 4-2 9-4-9-8-2 8-4Z"/>
     </g></svg>
@@ -52,5 +54,6 @@ export function SleepingBorg() {
       <path d="M36 59Q15 56 9 38Q28 35 41 47M85 57Q109 54 117 32Q96 32 80 46M32 58Q33 32 60 33Q89 32 91 58Q61 71 32 58ZM43 50q5 5 10 0M69 49q5 5 10-1M22 71q36 4 81-1M92 20h8l-8 8h8M109 7h11l-11 11h11"/>
     </g></svg>
 }
+
 
 
