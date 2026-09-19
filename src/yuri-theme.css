@@ -246,3 +246,20 @@ button.header-seal { background:transparent;padding:0;cursor:pointer; }
 
 .flap-fastener{position:absolute;left:50%;bottom:16%;width:32px;height:32px;margin-left:-16px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#f3d9df,#d5a6b3 70%);border:1px solid #986878;box-shadow:0 2px 3px #75445444,inset 0 0 0 3px #eac8d2;backface-visibility:hidden;transform:translateZ(.2px);pointer-events:none}.flap-fastener:after{content:"";position:absolute;inset:12px;border-radius:50%;background:#986878;box-shadow:0 1px 0 #fff5ef,inset 0 1px 2px #623d4e}@media(max-width:700px){.flap-fastener{width:26px;height:26px;margin-left:-13px}.flap-fastener:after{inset:10px}}
 
+
+/* Fixed vector geometry keeps the seal and arrows consistent on iOS. */
+.header-seal .monogram{width:58px;height:48px;display:block;flex:none;overflow:visible}
+.monogram text{font:22px Georgia,serif;fill:var(--deep-rose);letter-spacing:0}
+.monogram .monogram-caption{font:6px Arial,sans-serif;letter-spacing:1px}
+.arrow-up-right{display:inline-block;width:13px;height:13px;vertical-align:-2px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.header-gallery,.header-contact{color:var(--deep-rose)}
+.visit .arrow-up-right{width:18px;height:18px}
+.image-enlarge .arrow-up-right{vertical-align:-2px}
+.signature-pad .signature-example text{font:italic 22px 'Segoe Script','Apple Chancery','Brush Script MT',cursive;fill:var(--deep-rose)}
+.signature-example{pointer-events:none;animation:signature-cue 3s ease-in-out infinite}
+.signature-flourish{fill:none;stroke:var(--rose);stroke-width:1.2;stroke-linecap:round;stroke-dasharray:100;animation:signature-trace 3s ease-in-out infinite}
+.signature-dot{fill:var(--deep-rose)}
+.signature-pad.is-drawing svg{background-color:#ebcad266}
+@keyframes signature-cue{0%,100%{opacity:.9}50%{opacity:.55}}
+@keyframes signature-trace{0%{stroke-dashoffset:100;opacity:0}20%{opacity:.75}65%,100%{stroke-dashoffset:0;opacity:.4}}
+@media(max-width:700px){.header-seal .monogram{width:48px;height:40px}}

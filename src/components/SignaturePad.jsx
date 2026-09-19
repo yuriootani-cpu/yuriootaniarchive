@@ -53,7 +53,10 @@ export default function SignaturePad({ locked, onAuthorize }) {
     active.current = null
     setDrawing(false)
     if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId)
-    if (!cancelled && distance.current >= 14) {
+    if (!cancelled && distance.current < 14) {
+      cancelCountdown()
+      onAuthorize([])
+    } else if (!cancelled) {
       setPending(true)
       sendTimer.current = setTimeout(() => {
         setPending(false)
@@ -69,10 +72,10 @@ export default function SignaturePad({ locked, onAuthorize }) {
     distance.current = 0
   }
   return <div className={`signature-pad ${drawing ? 'is-drawing' : ''} ${pending ? 'is-pending' : ''} ${locked ? 'signed' : ''}`}>
-    <div className="signature-label"><span>SIGN HERE</span>{!locked && strokes.length > 0 && <button onClick={clear}>Clear</button>}</div>
-    <svg viewBox="0 0 300 90" role="button" tabIndex={locked ? -1 : 0} aria-disabled={locked} aria-label="Sign to open: draw a small mark, or press Enter or Space." onKeyDown={e => { if (!locked && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); cancelCountdown(); onAuthorize(latestStrokes.current) } }} onPointerDown={start} onPointerMove={move} onPointerUp={finish} onPointerCancel={e=>finish(e,true)} onLostPointerCapture={e=>finish(e,true)}>
-      {strokes.map((stroke,i)=><polyline key={i} points={stroke.map(p=>p.join(',')).join(' ')} />)}
-      {!strokes.length && !locked && <text x="150" y="52" textAnchor="middle">Leave your mark to open</text>}
+    <div className="signature-label"><span>{pending ? 'OPENING…' : 'TAP OR SIGN'}</span>{!locked && strokes.length > 0 && <button onClick={clear}>Clear</button>}</div>
+    <svg viewBox="0 0 300 90" role="button" tabIndex={locked ? -1 : 0} aria-disabled={locked} aria-label="Open envelope: tap, draw a mark, or press Enter or Space." onClick={e => { if (!locked && e.detail === 0 && !active.current) { cancelCountdown(); onAuthorize(latestStrokes.current) } }} onKeyDown={e => { if (!locked && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); cancelCountdown(); onAuthorize(latestStrokes.current) } }} onPointerDown={start} onPointerMove={move} onPointerUp={finish} onPointerCancel={e=>finish(e,true)} onLostPointerCapture={e=>finish(e,true)}>
+      {strokes.map((stroke,i)=>stroke.length === 1 ? <circle key={i} className="signature-dot" cx={stroke[0][0]} cy={stroke[0][1]} r="1.5"/> : <polyline key={i} points={stroke.map(p=>p.join(',')).join(' ')} />)}
+      {!strokes.length && !locked && <g className="signature-example" aria-hidden="true"><text x="150" y="49" textAnchor="middle" textLength="224" lengthAdjust="spacingAndGlyphs">tap or sign to open</text><path className="signature-flourish" d="M55 65Q105 57 174 64T244 61" pathLength="100"/></g>}
     </svg>
     {pending && <span className="signature-countdown" aria-hidden="true"/>}
     {locked && <span className="authorization-stamp">SIGNED <span>Y / O</span></span>}
