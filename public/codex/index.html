@@ -469,7 +469,6 @@
   .titlecard .tc-art{display:block;width:100%;height:auto;max-height:100vh;max-height:100svh;object-fit:cover;object-position:50% 100%;}
   .titlecard .tc-text{position:absolute;left:0;right:0;top:8%;display:grid;justify-items:center;gap:14px;text-align:center;padding-inline:16px;}
   .titlecard .scrollcue{bottom:18px;}
-  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;}.scare{display:none}#dooropen .sfx{opacity:.85}.knob .clk{opacity:.8}}
 
   /* reveal: one gleam, then the bottom line calls to him */
   .reveal .glint1{position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,250,225,.0) 40%,rgba(255,250,225,.85) 50%,rgba(255,250,225,0) 60%,transparent 65%);background-size:300% 100%;background-position:100% 0;mix-blend-mode:overlay;opacity:0;}
@@ -860,7 +859,8 @@
 
 <script>
 (function(){
-  var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // animations always on: the OS reduced-motion setting is deliberately ignored
+  var RM=false;
   try{
     var c=document.createElement('canvas');c.width=c.height=160;var x=c.getContext('2d'),im=x.createImageData(160,160);
     for(var i=0;i<im.data.length;i+=4){var v=Math.random()*255|0;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=70;}
