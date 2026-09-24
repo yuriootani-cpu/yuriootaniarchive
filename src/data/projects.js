@@ -72,6 +72,15 @@ export const projects = [
     link: "https://yomitarot.com",
     sourceLink: "https://github.com/yuriootani-cpu/yomitarot"
   }
+  ,{
+    id: 10,
+    name: "Codex",
+    thumbnail: "/codex/img/mj/house.webp", images: [{src: "/codex/img/mj/house.webp", alt: "A house on a hill at night, across the lane from a church"}, {src: "/codex/img/mj/cover.webp", alt: "A boy holding up a leather book titled Codex"}, {src: "/codex/img/mj/title2.webp", alt: "The Codex book on a table by a window"}, {src: "/codex/img/mj/reading.webp", alt: "Reading the book from over his shoulder"}],
+    description: "A horror webcomic from a nightmare. Headphones on, scroll slowly.",
+    longDescription: "DRAFT: a horror webcomic from a nightmare i had. headphones on, scroll slowly.",
+    type: "comic",
+    link: "/codex/"
+  }
 ]
 
 
