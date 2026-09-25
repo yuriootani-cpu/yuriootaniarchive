@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kibbe/Kitchener Facial Analysis Study · Y / O</title>
+<meta name="description" content="do kibbe and kitchener face types show up in actual face geometry? i measured 559 faces to check.">
+<meta name="theme-color" content="#f7f4f1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f7f4f1; --sheet:#fffaf7; --blush:#ebcad2; --lav:#e8e3ec; --line:#c9c5d5; --line-2:#ddd8e3;
+  --ink:#292832; --ink-2:#655766; --muted:#8a7f8b; --plum:#754454; --rose:#b66e82;
+  /* data colors, validated on the sheet surface */
+  --west:#3e6fb4; --east:#a8456a; --third:#b87a12;
+  /* the same hues stepped for the night-sky panel */
+  --sky:#25222d; --sky-line:#3a3645; --sky-ink:#efe9ee; --sky-muted:#a69cab;
+  --s-west:#4b8fe2; --s-east:#c45f86; --s-third:#b98418;
+  --grot:'Space Grotesk',system-ui,sans-serif; --sans:'DM Sans',system-ui,sans-serif; --serif:Georgia,'Times New Roman',serif;
+  --hand:'Segoe Print','Bradley Hand','Comic Sans MS',cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--paper);overflow-x:hidden}
+body{background:radial-gradient(ellipse at 50% 0%,#f3e8ee 0,var(--paper) 55%) no-repeat,var(--paper);color:var(--ink);font:16px/1.7 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--plum);text-underline-offset:3px;text-decoration-thickness:1px}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+.wide{max-width:1080px;margin:0 auto;padding:0 20px}
+.label{font:500 10px/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+em.g{font-family:var(--serif);font-style:italic;font-weight:400}
+
+/* masthead, same as the archive */
+.masthead{height:84px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line-2);padding:0 5vw;background:rgba(247,244,241,.8);backdrop-filter:blur(6px);position:sticky;top:0;z-index:20}
+.masthead a{color:var(--ink-2);text-decoration:none;font-size:13px}
+.masthead a:hover{color:var(--plum)}
+.seal{width:52px;height:52px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font:400 17px/1 var(--serif);color:var(--ink);text-decoration:none!important;position:relative}
+.seal:after{content:"";position:absolute;inset:3px;border:1px solid var(--line-2);border-radius:50%}
+.seal small{display:block;font:500 5px var(--sans);letter-spacing:.14em;margin-top:3px;text-align:center;color:var(--muted)}
+
+/* hero */
+.hero{padding:76px 0 40px}
+.hero .wrap{position:relative}
+.file{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:30px}
+h1{font:400 clamp(54px,11vw,104px)/.92 var(--grot);letter-spacing:-.045em;margin:0 0 26px}
+h1 em{font:italic 400 .82em var(--serif);letter-spacing:-.02em;color:var(--plum)}
+.lede{font-size:19px;line-height:1.65;color:var(--ink);max-width:600px}
+.lede+.lede{margin-top:14px}
+.postmark{position:relative;float:right;margin:4px 8px 16px 24px;width:118px;height:118px;border:1px solid var(--rose);border-radius:50%;display:grid;place-items:center;text-align:center;transform:rotate(12deg);color:var(--rose);font:500 11px/1.35 var(--sans);letter-spacing:.14em;opacity:.8}
+.postmark:before{content:"";position:absolute;inset:5px;border:1px dashed var(--blush);border-radius:50%}
+.postmark b{display:block;font:400 26px/1 var(--grot);letter-spacing:-.02em}
+@media (max-width:760px){.postmark{display:none}}
+
+/* notebook note */
+.note{background:var(--sheet);border:1px solid var(--line-2);padding:20px 22px;margin:34px 0 0;position:relative;transform:rotate(-.6deg);box-shadow:0 18px 40px -26px rgba(117,68,84,.35)}
+.note .label{display:flex;justify-content:space-between;margin-bottom:10px}
+.note p{font-size:15px;color:var(--ink-2)}
+.hand{font:italic 17px/1.4 var(--hand);color:var(--plum)}
+
+section{padding:70px 0}
+.sec-head{display:flex;gap:14px;align-items:baseline;border-top:1px solid var(--line);padding-top:14px;margin-bottom:22px}
+h2{font:400 clamp(30px,5.2vw,42px)/1.05 var(--grot);letter-spacing:-.035em;margin:0 0 20px}
+h2 em{font:italic 400 .9em var(--serif);color:var(--plum);letter-spacing:-.01em}
+h3{font:500 10px/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:38px 0 12px}
+p+p{margin-top:14px}
+.small{font-size:14px;color:var(--ink-2)}
+.num{font-family:var(--grot);font-weight:500}
+
+/* stat sheets */
+.sheets{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;margin:30px 0 8px}
+.card{background:var(--sheet);border:1px solid var(--line-2);padding:20px 22px 18px;box-shadow:0 20px 44px -30px rgba(41,40,50,.35)}
+.card:nth-child(1){transform:rotate(-.7deg)} .card:nth-child(2){transform:rotate(.6deg)}
+.card .top{display:flex;justify-content:space-between;border-bottom:1px solid var(--line-2);padding-bottom:10px;margin-bottom:12px}
+.card .big{font:400 50px/1 var(--grot);letter-spacing:-.04em}
+.card .big small{font:italic 17px var(--serif);color:var(--muted);letter-spacing:0;margin-left:6px}
+.card p{font-size:13.5px;color:var(--ink-2);margin-top:10px;line-height:1.6}
+.verdict{grid-column:1/-1;background:var(--plum);color:#f7eef1;border:0;transform:none!important;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.verdict .big{font-size:40px;white-space:nowrap}
+.verdict p{color:#ecdce2;margin:0;flex:1;min-width:240px;font-size:14px}
+.verdict .label{color:#d9b9c4}
+
+/* tables */
+.tablewrap{overflow-x:auto;margin:14px 0 8px;background:var(--sheet);border:1px solid var(--line-2)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:500px}
+th,td{padding:10px 14px;text-align:right;border-bottom:1px solid var(--line-2);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{font:500 10px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+tbody tr:last-child td{border-bottom:0}
+td{color:var(--ink-2);font-variant-numeric:tabular-nums}
+td.hl{color:var(--ink);font-weight:500}
+.cell{display:inline-block;min-width:28px;padding:2px 6px;border-radius:2px;text-align:center}
+.sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:0}
+
+/* sky */
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px}
+.seg{display:inline-flex;border:1px solid var(--line);background:var(--sheet)}
+.seg button{background:none;border:0;color:var(--ink-2);font:500 12px var(--sans);padding:9px 14px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--plum);color:#fff}
+select{background:var(--sheet);color:var(--ink);border:1px solid var(--line);border-radius:0;font:500 12px var(--sans);padding:9px 12px}
+.frame{position:relative;background:radial-gradient(ellipse at 50% 40%,#2e2a38,var(--sky) 70%);border:1px solid #1c1a22;overflow:hidden;box-shadow:0 30px 60px -30px rgba(41,40,50,.5)}
+#sky{height:min(76vh,700px);min-height:420px}
+#sky canvas{display:block}
+.frame .corner{position:absolute;left:16px;top:14px;font:500 10px var(--sans);letter-spacing:.16em;color:var(--sky-muted);pointer-events:none}
+.legend{position:absolute;left:16px;bottom:13px;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--sky-ink);pointer-events:none}
+.legend .c{color:var(--sky-muted)}
+.hint{position:absolute;right:16px;bottom:13px;font:italic 14px var(--hand);color:var(--sky-muted);pointer-events:none}
+.tip{position:absolute;pointer-events:none;background:var(--sheet);border:1px solid var(--line);padding:8px 11px;font-size:12px;color:var(--ink);line-height:1.45;display:none;white-space:nowrap;z-index:5;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.tip b{font:500 14px var(--grot)}
+.tip .t2{color:var(--muted)}
+
+/* pills */
+.pill{font-size:12.5px;border:1px solid var(--line);background:var(--sheet);padding:4px 11px;color:var(--ink-2);display:inline-block;margin:3px 5px 3px 0}
+.pill.more{border-style:dashed;background:none}
+
+/* heads */
+.faces{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.face{position:relative;aspect-ratio:3/4;background:linear-gradient(180deg,#f1ebf1,#e8e0e8);border:1px solid var(--line-2);overflow:hidden}
+.face:nth-child(1){transform:rotate(-.8deg)} .face:nth-child(3){transform:rotate(.8deg)}
+.face canvas{display:block;width:100%;height:100%;cursor:grab}
+.face .lab{position:absolute;left:14px;right:14px;top:12px;display:flex;justify-content:space-between;align-items:baseline;pointer-events:none;border-bottom:1px solid rgba(117,68,84,.18);padding-bottom:8px}
+.face .lab b{font:400 19px var(--grot);letter-spacing:-.02em}
+.face .lab span{font-size:11px;color:var(--muted)}
+.face .dot{position:absolute;left:14px;bottom:14px;width:10px;height:10px;border-radius:50%}
+@media (max-width:700px){.faces{grid-template-columns:1fr}.face{aspect-ratio:4/3;transform:none!important}.masthead{height:70px}.hero{padding-top:48px}section{padding:52px 0}}
+
+/* fine print */
+.fine{list-style:none;counter-reset:f;margin-top:10px}
+.fine li{padding:14px 0 14px 36px;border-bottom:1px solid var(--line-2);font-size:15px;color:var(--ink-2);position:relative}
+.fine li:before{counter-increment:f;content:counter(f,decimal-leading-zero);position:absolute;left:0;top:16px;font:500 11px var(--sans);letter-spacing:.1em;color:var(--rose)}
+.fine b{color:var(--ink);font-weight:600}
+footer{border-top:1px solid var(--line-2);margin-top:30px;padding:26px 5vw 60px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font:500 10px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+footer a{color:var(--muted);text-decoration:none}
+.signed{font:italic 22px var(--hand);color:var(--plum);text-transform:none;letter-spacing:0}
+</style>
+</head>
+<body>
+
+<nav class="masthead">
+  <a href="/">Gallery ↗</a>
+  <a class="seal" href="/" aria-label="Y / O archive home"><span>Y/O<small>ARCHIVE</small></span></a>
+  <a href="kibbe-map.html">Kibbe map ↗</a>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="file label"><span>Y / O · Personal archive</span><span>File 010</span></div>
+    <div class="label">Works, experiments &amp; other things</div>
+    <h1 style="margin-top:14px;font-size:clamp(38px,8.5vw,84px)">Kibbe/<wbr>Kitchener <em>facial analysis study</em></h1>
+    <div class="postmark" aria-hidden="true"><div><b>559</b>FACES<br>3 SHAPES</div></div>
+    <p class="lede">i was curious whether kibbe and kitchener facial types ("you're a soft natural," "that's a high-spirited face") are grounded in anything real, or purely vibe based. so i turned 559 faces into 3d head shapes and checked.</p>
+    <p class="lede">short answer: it doesn't. but the faces did sort themselves into <em class="g">three shapes</em>, and i still can't explain one of them.</p>
+
+    <div class="note">
+      <div class="label"><span>From my notebook</span><span>×</span></div>
+      <p>started with a way bigger pile of random faces (13k+) but it got too big, so i cut it down to three groups: western celebrities the style community already typed, k-pop idols and korean actresses, and world leaders. no photos on this page. everything here is built from the shape numbers.</p>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head label"><span>01</span><span>The typing systems</span></div>
+    <h2>kibbe &amp; kitchener <em>vs.</em> actual face geometry</h2>
+    <p>every celebrity here already had a kibbe type (soft natural, dramatic, etc.) or kitchener essence (romantic, high-spirited, etc.) assigned by the style community. i ran each photo through DECA, a model that rebuilds a 3d head from a single photo and strips out expression, pose and lighting, so you're left with just the shape of the face.</p>
+    <p>if the types were really in the bones, same-type faces should sit near each other. simplest check: find each face's closest lookalike by shape and see if they share a type.</p>
+
+    <div class="sheets" id="verdicts"></div>
+
+    <h3>every kibbe type shows up in every shape group</h3>
+    <p class="small">rows are kibbe types, columns are where those faces landed. if kibbe tracked geometry, each row would pile into one column. none of them do.</p>
+    <div class="tablewrap"><table id="kibbeTable"></table></div>
+    <p class="small" style="margin-top:12px">for reference, here's <a href="kibbe-map.html">what the theory expects</a>: the yin/yang map kibbe is built on.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wide">
+    <div class="wrap" style="padding:0">
+      <div class="sec-head label"><span>02</span><span>The constellation</span></div>
+      <h2>559 faces, <em>one sky</em></h2>
+      <p>each dot is a face. faces with similar 3d shapes sit close together (it's a UMAP of the 100 shape numbers per face). drag to spin it, scroll to zoom, hover for names.</p>
+      <p class="small" style="margin-top:8px">try picking a kibbe type from the menu and watch it scatter across the whole thing.</p>
+    </div>
+    <div style="height:26px"></div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Color by">
+        <button data-mode="group" aria-pressed="true">By group</button>
+        <button data-mode="cluster" aria-pressed="false">By shape</button>
+      </div>
+      <select id="kibbeSel" aria-label="Highlight a Kibbe type"><option value="">Highlight a kibbe type…</option></select>
+    </div>
+    <div class="frame" id="sky">
+      <div class="corner">FIG. 1 · SHAPE SPACE</div>
+      <div class="legend" id="skyLegend"></div>
+      <div class="hint">drag · scroll · hover</div>
+      <div class="tip" id="tip"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head label"><span>03</span><span>What it found instead</span></div>
+    <h2>west-leaning, east-leaning, <em>and a third thing</em></h2>
+    <p>so i took the labels off and let k-means sort the faces by shape alone. three groups came out. two of them roughly follow where people are from. the third doesn't follow anything i measured.</p>
+
+    <h3>who ended up where</h3>
+    <div class="tablewrap"><table id="clusterTable"></table></div>
+    <p class="small" style="margin-top:12px">these are leanings, not ethnicities. 59 western celebs landed east-leaning and 32 k-pop idols and actresses landed west-leaning. obama, modi and moon jae-in went west-leaning, while xi jinping and shinzo abe went east-leaning.</p>
+
+    <h3>the third shape</h3>
+    <p>this is the weird one. if you only let the algorithm make <b>two</b> groups, it doesn't split east vs. west. it splits this third shape off from everyone else, and that's the cleanest split in the whole dataset (<span class="num" id="k2sil"></span>). no idea what it is yet tbh. it pulls <span class="num" id="thirdN"></span> faces from all three groups:</p>
+    <div id="thirdNames" style="margin-top:14px"></div>
+    <p class="hand" style="margin-top:14px">↑ angelina jolie, grace kelly and emmanuel macron in the same bucket. make it make sense</p>
+  </div>
+</section>
+
+<section>
+  <div class="wide">
+    <div class="wrap" style="padding:0">
+      <div class="sec-head label"><span>04</span><span>The faces</span></div>
+      <h2>each group's average head, <em>turned up 5×</em></h2>
+      <p>each head is the group's average 3d shape, with its difference from the overall average multiplied by five so you can actually see it. flip to 1× to see how subtle it really is.</p>
+    </div>
+    <div style="height:26px"></div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Faces for">
+        <button data-fmode="c" aria-pressed="true">By shape</button>
+        <button data-fmode="g" aria-pressed="false">By group</button>
+      </div>
+      <div class="seg" role="group" aria-label="Exaggeration">
+        <button data-amp="1" aria-pressed="false">1×</button>
+        <button data-amp="5" aria-pressed="true">5×</button>
+      </div>
+    </div>
+    <div class="faces" id="faces"></div>
+    <p class="small" style="margin-top:16px" id="facesNote"></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head label"><span>05</span><span>Fine print</span></div>
+    <h2>what this <em>can't</em> tell you</h2>
+    <ul class="fine">
+      <li><b>the groups aren't balanced.</b> the celebrities are all women and the leaders are almost all men (46 of 49), mostly older. a lot of the western celebs come from old studio portraits. some of what separates the groups could be sex, age or photo era, not ancestry.</li>
+      <li><b>"western" is loose.</b> it's whoever the kibbe community has typed: mostly american and european, but also madhubala, awkwafina, frida kahlo and others.</li>
+      <li><b>kitchener is thin.</b> only 41 faces had kitchener labels. on one measure the labels are slightly less scattered than random (p = <span id="kitP"></span>), but they still don't form groups.</li>
+      <li><b>it's geometry only.</b> stylists might be picking up on something real that 3d shape doesn't capture, like coloring, skin texture, body frame or just the overall vibe.</li>
+      <li><b>the groups are soft.</b> silhouette scores of 0.18–0.30 mean real tendencies with a lot of overlap, not boxes. faces vary continuously, which lines up with the face-space idea from academic research (valentine, 1991).</li>
+      <li><b>how, exactly:</b> one frontal photo per person → DECA → 100 FLAME shape numbers → PCA to 10 → k-means (k=3) and a 3d UMAP. type tests are nearest-neighbor match, silhouette and ARI, with p-values from 500 label shuffles.</li>
+    </ul>
+    <h3>data</h3>
+    <p class="small"><a href="data/faces.csv">faces.csv</a> has every face with its group, shape, kibbe/kitchener label and map position. <a href="data/flame-shape-params.csv">flame-shape-params.csv</a> has the 100 raw shape numbers per face.</p>
+  </div>
+</section>
+
+<footer>
+  <span>Y / O · Personal archive · File 010</span>
+  <span class="signed">– yuri</span>
+  <a href="/">Back to the archive ↗</a>
+</footer>
+
+<script src="data/faces.js"></script>
+<script src="data/meshes.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const R = window.RESULTS, F = window.FACES;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+// [label, sheet color var, sky color var]
+const GROUPS = {western:['Western celebrities','--west','--s-west'], kpop:['East Asian celebrities','--east','--s-east'], leaders:['World leaders','--third','--s-third']};
+const SHORT = {western:'Western',kpop:'East Asian',leaders:'Leaders'};
+const CLUSTERS = {'West-leaning':['--west','--s-west'],'East-leaning':['--east','--s-east'],'Third shape':['--third','--s-third']};
+const LOWER = {'West-leaning':'west-leaning','East-leaning':'east-leaning','Third shape':'third shape'};
+const pct = x => Math.round(x*100)+'%';
+
+/* ---------- stat sheets ---------- */
+(function(){
+  const [kb,kt]=R.typing;
+  const card=(t,r)=>`<div class="card"><div class="top label"><span>${t}</span><span>${r.n_faces} faces · ${r.n_types} types</span></div>
+    <div class="big">${pct(r.nn_same_type)}<small>vs ${pct(r.nn_same_type_chance)} by chance</small></div>
+    <p>of faces have a closest lookalike with the same type. agreement with blind clusters (ARI) is <span class="num">${r.ari_blind_clusters.toFixed(2)}</span>, where 0 means none. silhouette is <span class="num">${r.silhouette.toFixed(2)}</span>, and below 0 means the types are more mixed than grouped.</p></div>`;
+  document.getElementById('verdicts').innerHTML=card('Kibbe',kb)+card('Kitchener',kt)+
+   `<div class="card verdict"><div><div class="label">Verdict</div><div class="big">no signal</div></div><p>neither system beats a coin flip at predicting who looks like whom. a face's closest lookalike shares its kibbe type ${pct(kb.nn_same_type)} of the time, the same as picking at random.</p></div>`;
+  document.getElementById('kitP').textContent=kt.silhouette_p;
+})();
+
+/* ---------- tables ---------- */
+function heat(v,max){const a=v/max;return `<span class="cell" style="background:rgba(117,68,84,${(a*.30).toFixed(3)});color:${a>.55?'var(--ink)':'var(--ink-2)'}">${v}</span>`;}
+(function(){
+  const cols=['West-leaning','East-leaning','Third shape'];
+  const kb=R.kibbe_by_cluster, tot=r=>cols.reduce((s,c)=>s+kb[r][c],0);
+  const rows=Object.keys(kb).sort((a,b)=>tot(b)-tot(a));
+  const mx=Math.max(...rows.flatMap(r=>cols.map(c=>kb[r][c])));
+  let h='<thead><tr><th>Kibbe type</th>'+cols.map(c=>`<th><span class="sw" style="background:var(${CLUSTERS[c][0]})"></span>${LOWER[c]}</th>`).join('')+'<th>Total</th></tr></thead><tbody>';
+  rows.forEach(r=>{h+=`<tr><td class="hl">${r}</td>`+cols.map(c=>`<td>${heat(kb[r][c],mx)}</td>`).join('')+`<td>${tot(r)}</td></tr>`});
+  document.getElementById('kibbeTable').innerHTML=h+'</tbody>';
+
+  const gs=['western','kpop','leaders'];
+  let t='<thead><tr><th>Shape</th>'+gs.map(g=>`<th>${SHORT[g]}</th>`).join('')+'<th>Total</th></tr></thead><tbody>';
+  R.clusters.forEach(c=>{const s=gs.reduce((a,g)=>a+c[g],0);t+=`<tr><td class="hl"><span class="sw" style="background:var(${CLUSTERS[c.name][0]})"></span>${LOWER[c.name]}</td>`+gs.map(g=>`<td>${c[g]} <span style="color:var(--muted)">(${pct(c[g]/R.n[g])})</span></td>`).join('')+`<td>${s}</td></tr>`});
+  t+=`<tr><td style="color:var(--muted)">total</td>`+gs.map(g=>`<td>${R.n[g]}</td>`).join('')+`<td>${gs.reduce((s,g)=>s+R.n[g],0)}</td></tr>`;
+  document.getElementById('clusterTable').innerHTML=t+'</tbody>';
+
+  const k2=R.k_scan.find(x=>x.k===2), k3=R.k_scan.find(x=>x.k===3), third=R.clusters.find(c=>c.name==='Third shape');
+  const n3=third.western+third.kpop+third.leaders;
+  document.getElementById('k2sil').textContent=`silhouette ${k2.silhouette} vs. ${k3.silhouette} for three groups`;
+  document.getElementById('thirdN').textContent=n3;
+  const pick=['Angelina Jolie','Grace Kelly','Emma Stone','Jennifer Lawrence','Uma Thurman','Catherine Deneuve','Oprah Winfrey','Diana Ross','Dolly Parton','Frida Kahlo','Kamala Harris','Song Hye-kyo','Jang Wonyoung','Kim Da-mi','Seo Joohyun','Emmanuel Macron','Jacinda Ardern','Pedro Sanchez'];
+  const tn=R.third_shape_names.filter(([n])=>pick.includes(n));
+  document.getElementById('thirdNames').innerHTML=tn.map(([n,g])=>`<span class="pill"><span class="sw" style="background:var(${GROUPS[g][1]})"></span>${n}</span>`).join('')+`<span class="pill more">+ ${n3-tn.length} more in faces.csv</span>`;
+})();
+
+/* ---------- constellation ---------- */
+(function(){
+  const host=document.getElementById('sky'), tip=document.getElementById('tip');
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));host.prepend(renderer.domElement);
+  const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(45,1,.01,100);
+  cam.position.set(2.1,1.2,2.7);
+  const ctl=new THREE.OrbitControls(cam,renderer.domElement);ctl.enableDamping=true;ctl.autoRotate=true;ctl.autoRotateSpeed=.5;ctl.minDistance=.6;ctl.maxDistance=7;
+  ctl.addEventListener('start',()=>ctl.autoRotate=false);
+  const n=F.length,pos=new Float32Array(n*3),col=new Float32Array(n*3),size=new Float32Array(n),alpha=new Float32Array(n);
+  F.forEach((f,i)=>pos.set(f.p,i*3));
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  geo.setAttribute('size',new THREE.BufferAttribute(size,1));
+  geo.setAttribute('alpha',new THREE.BufferAttribute(alpha,1));
+  const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,
+    uniforms:{dpr:{value:renderer.getPixelRatio()}},
+    vertexShader:`attribute float size;attribute float alpha;attribute vec3 color;varying vec3 vC;varying float vA;uniform float dpr;
+      void main(){vC=color;vA=alpha;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=size*dpr*(3.2/-mv.z);gl_Position=projectionMatrix*mv;}`,
+    fragmentShader:`varying vec3 vC;varying float vA;void main(){vec2 d=gl_PointCoord-.5;float r=length(d);if(r>.5)discard;
+      float core=smoothstep(.5,.3,r);float glow=smoothstep(.5,0.,r)*.35;gl_FragColor=vec4(vC,vA*(core+glow));}`});
+  const pts=new THREE.Points(geo,mat);scene.add(pts);
+  const g2=new THREE.BufferGeometry().setFromPoints([[-1.2,0,0],[1.2,0,0],[0,-1.2,0],[0,1.2,0],[0,0,-1.2],[0,0,1.2]].map(p=>new THREE.Vector3(...p)));
+  scene.add(new THREE.LineSegments(g2,new THREE.LineBasicMaterial({color:0x3a3645})));
+
+  let mode='group',hi='';
+  const sel=document.getElementById('kibbeSel');
+  [...new Set(F.map(f=>f.k).filter(Boolean))].sort().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=`${k} (${F.filter(f=>f.k===k).length})`;sel.append(o)});
+  function paint(){
+    F.forEach((f,i)=>{
+      const c=new THREE.Color(css(mode==='group'?GROUPS[f.g][2]:CLUSTERS[f.c][1]));
+      let s=9,a=.95;
+      if(hi){ if(f.k===hi){c.set(0xfff4f7);s=15;a=1}else{s=7;a=.22} }
+      col.set([c.r,c.g,c.b],i*3);size[i]=s;alpha[i]=a;
+    });
+    ['color','size','alpha'].forEach(k=>geo.attributes[k].needsUpdate=true);
+    const items=mode==='group'?Object.entries(GROUPS).map(([k,v])=>[v[0],v[2],F.filter(f=>f.g===k).length]):Object.entries(CLUSTERS).map(([l,v])=>[LOWER[l],v[1],F.filter(f=>f.c===l).length]);
+    document.getElementById('skyLegend').innerHTML=items.map(([l,v,c])=>`<span><span class="sw" style="background:var(${v})"></span>${l} <span class="c">${c}</span></span>`).join('')+(hi?`<span><span class="sw" style="background:#fff4f7"></span>${hi}</span>`:'');
+  }
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',x===b));paint()});
+  sel.onchange=()=>{hi=sel.value;paint()};
+  paint();
+
+  const ray=new THREE.Raycaster();ray.params.Points.threshold=.03;const m=new THREE.Vector2();
+  renderer.domElement.addEventListener('pointermove',e=>{const r=host.getBoundingClientRect();m.x=(e.clientX-r.left)/r.width*2-1;m.y=-(e.clientY-r.top)/r.height*2+1;ray.setFromCamera(m,cam);
+    const hits=ray.intersectObject(pts);if(hits.length){const f=F[hits[0].index];
+      tip.style.display='block';tip.innerHTML=`<b>${f.n}</b><div class="t2">${GROUPS[f.g][0]} · ${LOWER[f.c]}${f.k?' · '+f.k:''}</div>`;
+      const x=e.clientX-r.left+14,y=e.clientY-r.top+14;tip.style.left=Math.min(x,r.width-tip.offsetWidth-8)+'px';tip.style.top=Math.min(y,r.height-tip.offsetHeight-8)+'px';renderer.domElement.style.cursor='pointer'}
+    else{tip.style.display='none';renderer.domElement.style.cursor='grab'}});
+  renderer.domElement.addEventListener('pointerleave',()=>tip.style.display='none');
+  function rs(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()}
+  new ResizeObserver(rs).observe(host);rs();
+  (function loop(){ctl.update();renderer.render(scene,cam);requestAnimationFrame(loop)})();
+})();
+
+/* ---------- exaggerated heads ---------- */
+(function(){
+  const M=window.MESHES, idx=new Uint32Array(M.faces), mean=M.meshes.mean.v;
+  const wrap=document.getElementById('faces');
+  const sets={c:[['c:West-leaning','--west','west-leaning'],['c:East-leaning','--east','east-leaning'],['c:Third shape','--third','third shape']],
+              g:[['g:western','--west','western celebs'],['g:kpop','--east','east asian celebs'],['g:leaders','--third','world leaders']]};
+  let fmode='c',amp=5;
+  let cx=0,cy=0,cz=0;const nv=mean.length/3;for(let i=0;i<nv;i++){cx+=mean[i*3];cy+=mean[i*3+1];cz+=mean[i*3+2]}cx/=nv;cy/=nv;cz/=nv;const C=[cx,cy,cz];
+  const views=[];let rotY=0,rotX=0,drag=null,touched=false;
+  for(let k=0;k<3;k++){
+    const d=document.createElement('div');d.className='face';d.innerHTML='<div class="lab"></div><span class="dot"></span>';wrap.append(d);
+    const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,2));d.prepend(r.domElement);
+    const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(26,.75,.01,10);cam.position.set(0,.01,1.0);
+    sc.add(new THREE.HemisphereLight(0xfff6f2,0x6f6274,.5));
+    const key=new THREE.DirectionalLight(0xfff1ea,.62);key.position.set(.6,.6,1);sc.add(key);
+    const rim=new THREE.DirectionalLight(0xf0c9d6,.35);rim.position.set(-1,.2,-.6);sc.add(rim);
+    const geo=new THREE.BufferGeometry();geo.setIndex(new THREE.BufferAttribute(idx,1));
+    geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(mean.length),3));
+    const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0xd9c6ba,roughness:.72,metalness:0}));
+    const grp=new THREE.Group();grp.add(mesh);sc.add(grp);
+    views.push({d,r,sc,cam,geo,grp});
+    d.addEventListener('pointerdown',e=>{touched=true;drag={x:e.clientX,y:e.clientY,ry:rotY,rx:rotX};d.setPointerCapture(e.pointerId)});
+    d.addEventListener('pointermove',e=>{if(!drag)return;rotY=drag.ry+(e.clientX-drag.x)*.01;rotX=Math.max(-.6,Math.min(.6,drag.rx+(e.clientY-drag.y)*.006))});
+    d.addEventListener('pointerup',()=>drag=null);
+  }
+  function load(){
+    sets[fmode].forEach(([key,v,name],k)=>{
+      const m=M.meshes[key],V=views[k],p=V.geo.attributes.position.array;
+      for(let i=0;i<p.length;i++){p[i]=(mean[i]+(m.v[i]-mean[i])*(amp/5)-C[i%3])/1000}
+      V.geo.attributes.position.needsUpdate=true;V.geo.computeVertexNormals();V.geo.computeBoundingSphere();
+      V.d.querySelector('.dot').style.background=`var(${v})`;
+      V.d.querySelector('.lab').innerHTML=`<b>${name}</b><span>${m.n} faces · ${amp}×</span>`;
+    });
+    document.getElementById('facesNote').textContent=fmode==='g'
+      ? 'heads up: the world leaders head is mostly showing male vs. female and older vs. younger, since 46 of the 49 leaders are men. drag any head to spin all three.'
+      : 'drag any head to spin all three.';
+  }
+  document.querySelectorAll('[data-fmode]').forEach(b=>b.onclick=()=>{fmode=b.dataset.fmode;document.querySelectorAll('[data-fmode]').forEach(x=>x.setAttribute('aria-pressed',x===b));load()});
+  document.querySelectorAll('[data-amp]').forEach(b=>b.onclick=()=>{amp=+b.dataset.amp;document.querySelectorAll('[data-amp]').forEach(x=>x.setAttribute('aria-pressed',x===b));load()});
+  load();
+  const t0=performance.now();
+  (function loop(t){
+    if(!drag&&!touched)rotY=Math.sin((t-t0)/2600)*.55;
+    views.forEach(V=>{const w=V.d.clientWidth,h=V.d.clientHeight;if(V.r.domElement.width!==Math.round(w*V.r.getPixelRatio())){V.r.setSize(w,h,false);V.cam.aspect=w/h;V.cam.updateProjectionMatrix()}
+      V.grp.rotation.set(rotX,rotY,0);V.r.render(V.sc,V.cam)});
+    requestAnimationFrame(loop)})(t0);
+})();
+</script>
+</body>
+</html>

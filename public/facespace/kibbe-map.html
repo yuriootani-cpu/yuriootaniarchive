@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kibbe Constellation Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=DM+Mono:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #06080f;
+    color: #c8cad0;
+    font-family: 'DM Mono', monospace;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    cursor: crosshair;
+  }
+
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  #constellation-layer {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+
+  .header {
+    position: fixed;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .header h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: #9ea4b8;
+    text-shadow: 0 0 40px rgba(140, 160, 220, 0.3);
+  }
+
+  .header .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: #5a5f72;
+    margin-top: 6px;
+  }
+
+  .axis-label {
+    position: fixed;
+    z-index: 5;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #2a2e3d;
+    pointer-events: none;
+  }
+
+  .axis-label.yang { left: 40px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+  .axis-label.yin { right: 40px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+  .axis-label.vertical { top: 80px; left: 50%; transform: translateX(-50%); }
+  .axis-label.compact { bottom: 30px; left: 50%; transform: translateX(-50%); }
+
+  .type-label {
+    position: absolute;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 4;
+  }
+
+  .type-count {
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    font-size: 8px;
+    letter-spacing: 1px;
+    opacity: 0.5;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .star {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 3;
+    transition: all 0.3s ease;
+  }
+
+  .star::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .star:hover {
+    transform: translate(-50%, -50%) scale(2.5);
+    z-index: 20;
+  }
+
+  .star:hover::after {
+    opacity: 1;
+  }
+
+  .star-tooltip {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 3px 10px;
+    border-radius: 2px;
+    z-index: 30;
+  }
+
+  .star:hover .star-tooltip {
+    opacity: 1;
+  }
+
+  .legend {
+    position: fixed;
+    bottom: 50px;
+    right: 40px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    color: #4a4e5d;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .legend-item:hover { color: #8a8e9d; }
+
+  .legend-item .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .legend-header {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #2a2e3d;
+    margin-bottom: 4px;
+  }
+
+  .stats {
+    position: fixed;
+    bottom: 50px;
+    left: 40px;
+    z-index: 10;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 300;
+    color: #2a2e3d;
+    letter-spacing: 1px;
+  }
+
+  .stats span { color: #4a4e5d; }
+
+  svg.constellation-lines {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Highlight mode */
+  body.highlight-mode .star { opacity: 0.08; }
+  body.highlight-mode .star.highlighted { opacity: 1; }
+  body.highlight-mode .constellation-lines line { opacity: 0.02 !important; }
+  body.highlight-mode .constellation-lines line.highlighted { opacity: 0.15 !important; }
+</style>
+</head>
+<body>
+<a href="index.html" style="position:fixed;top:18px;left:20px;z-index:20;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;color:#9ea4b8;text-decoration:none">← Face study</a>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="header">
+  <h1>Kibbe Constellations</h1>
+  <div class="subtitle">290 verified celebrity type assignments mapped across the yin&ndash;yang spectrum</div>
+</div>
+
+<div class="axis-label yang">Yang &mdash; Angular &mdash; Sharp</div>
+<div class="axis-label yin">Yin &mdash; Curved &mdash; Soft</div>
+<div class="axis-label vertical">Elongated &middot; Vertical</div>
+<div class="axis-label compact">Compact &middot; Petite</div>
+
+<svg class="constellation-lines" id="lines-svg"></svg>
+<div id="constellation-layer"></div>
+
+<div class="legend" id="legend"></div>
+
+<div class="stats">
+  <span>290</span> celebrities &middot; <span>13</span> types &middot; kibbe verified
+</div>
+
+<script>
+const DATA = [{"name":"Adele","kibbe_type":"Soft Dramatic"},{"name":"Alexa Ray Joel","kibbe_type":"Soft Natural"},{"name":"Alexis Smith","kibbe_type":"Dramatic"},{"name":"Ali McGraw","kibbe_type":"Natural"},{"name":"Ally Sheedy","kibbe_type":"Soft Natural"},{"name":"Amy Adams","kibbe_type":"Flamboyant Natural"},{"name":"Angelina Jolie","kibbe_type":"Flamboyant Natural"},{"name":"Anita Ekberg","kibbe_type":"Soft Dramatic"},{"name":"Anita Page","kibbe_type":"Soft Classic"},{"name":"Anjelica Huston","kibbe_type":"Dramatic"},{"name":"Ann-Margret","kibbe_type":"Theatrical Romantic"},{"name":"Anne Bancroft","kibbe_type":"Soft Dramatic"},{"name":"Anne Hathaway","kibbe_type":"Flamboyant Natural"},{"name":"Aretha Franklin","kibbe_type":"Soft Natural"},{"name":"Ariana Grande","kibbe_type":"Theatrical Romantic"},{"name":"Arlene Dahl","kibbe_type":"Romantic"},{"name":"Ashley Oslen","kibbe_type":"Soft Gamine"},{"name":"Audrey Hepburn","kibbe_type":"Flamboyant Gamine"},{"name":"Audrey Tautou","kibbe_type":"Soft Gamine"},{"name":"Ava Gardner","kibbe_type":"Soft Dramatic"},{"name":"Barabara Mandrell","kibbe_type":"Romantic"},{"name":"Barbara Carrera","kibbe_type":"Soft Dramatic"},{"name":"Barbara Hershey","kibbe_type":"Soft Natural"},{"name":"Barbara Walters","kibbe_type":"Soft Classic"},{"name":"Barbra Streisand","kibbe_type":"Soft Dramatic"},{"name":"Bea Arthur","kibbe_type":"Flamboyant Natural"},{"name":"Bernadette Peters","kibbe_type":"Romantic"},{"name":"Bette Davis","kibbe_type":"Soft Gamine"},{"name":"Betty Grable","kibbe_type":"Soft Natural"},{"name":"Betty White","kibbe_type":"Soft Gamine"},{"name":"Beyonce Knowles","kibbe_type":"Romantic"},{"name":"Blythe Danner","kibbe_type":"Flamboyant Natural"},{"name":"Bonnie Franklin","kibbe_type":"Flamboyant Gamine"},{"name":"Brigitte Bardot","kibbe_type":"Soft Gamine"},{"name":"Brooke Shields","kibbe_type":"Flamboyant Natural"},{"name":"Cameron Diaz","kibbe_type":"Flamboyant Natural"},{"name":"Cameron Diaz","kibbe_type":"Flamboyant Natural"},{"name":"Carly Simon","kibbe_type":"Flamboyant Natural"},{"name":"Carmen Miranda","kibbe_type":"Flamboyant Gamine"},{"name":"Carol Burnett","kibbe_type":"Natural"},{"name":"Carole Lumbard","kibbe_type":"Soft Natural"},{"name":"Carolina Herrera","kibbe_type":"Soft Classic"},{"name":"Cate Blanchett","kibbe_type":"Dramatic"},{"name":"Catherine Deneuve","kibbe_type":"Soft Classic"},{"name":"Catherine Oxenberg","kibbe_type":"Soft Classic"},{"name":"Charlize Theron","kibbe_type":"Flamboyant Natural"},{"name":"Chloe Sevigny","kibbe_type":"Soft Natural"},{"name":"Christie Brinkley","kibbe_type":"Flamboyant Natural"},{"name":"Christina Hendricks","kibbe_type":"Soft Dramatic"},{"name":"Christina Ricci","kibbe_type":"Romantic"},{"name":"Cindy Crawford","kibbe_type":"Flamboyant Natural"},{"name":"Claire Danes","kibbe_type":"Dramatic"},{"name":"Clara Bow","kibbe_type":"Soft Gamine"},{"name":"Claudette Colbert","kibbe_type":"Soft Gamine"},{"name":"Claudia Cardinale","kibbe_type":"Romantic"},{"name":"Claudia Schiffer","kibbe_type":"Flamboyant Natural"},{"name":"Coco Chanel","kibbe_type":"Flamboyant Gamine"},{"name":"Colleen Dewhurst","kibbe_type":"Flamboyant Natural"},{"name":"Connie Sellecca","kibbe_type":"Dramatic Classic"},{"name":"Constance Bennett","kibbe_type":"Soft Classic"},{"name":"Cybil Shepherd","kibbe_type":"Classic"},{"name":"Cyndi Lauper","kibbe_type":"Soft Gamine"},{"name":"Debbie Allen","kibbe_type":"Flamboyant Gamine"},{"name":"Debbie Reynolds","kibbe_type":"Soft Gamine"},{"name":"Debra Winger","kibbe_type":"Flamboyant Gamine"},{"name":"Delta Burke","kibbe_type":"Romantic"},{"name":"Denee Benton","kibbe_type":"Soft Classic"},{"name":"Diahann Carroll","kibbe_type":"Dramatic"},{"name":"Diana Ross","kibbe_type":"Flamboyant Gamine"},{"name":"Diana, Princess of Wales","kibbe_type":"Flamboyant Natural"},{"name":"Diane Sawyer","kibbe_type":"Classic"},{"name":"Dick Van Dyke","kibbe_type":"Flamboyant Natural"},{"name":"Dinah Washington","kibbe_type":"Soft Natural"},{"name":"Dionne Warwick","kibbe_type":"Flamboyant Natural"},{"name":"Dolly Parton","kibbe_type":"Romantic"},{"name":"Dolores del Rio","kibbe_type":"Theatrical Romantic"},{"name":"Donna Mills","kibbe_type":"Theatrical Romantic"},{"name":"Donna Reed","kibbe_type":"Soft Classic"},{"name":"Doris Day","kibbe_type":"Soft Natural"},{"name":"Dorothy Dandridge","kibbe_type":"Theatrical Romantic"},{"name":"Drew Barrymore","kibbe_type":"Romantic"},{"name":"Eartha Kitt","kibbe_type":"Soft Gamine"},{"name":"Edith Piaf","kibbe_type":"Gamine"},{"name":"Elizabeth Taylor","kibbe_type":"Romantic"},{"name":"Ellen Barkin","kibbe_type":"Soft Natural"},{"name":"Emma Samms","kibbe_type":"Romantic"},{"name":"Emma Stone","kibbe_type":"Flamboyant Natural"},{"name":"Emma Thompson","kibbe_type":"Soft Classic"},{"name":"Eve Arden","kibbe_type":"Flamboyant Natural"},{"name":"Farrah Fawcett","kibbe_type":"Flamboyant Natural"},{"name":"Faye Dunaway","kibbe_type":"Dramatic"},{"name":"France Nuyen","kibbe_type":"Dramatic"},{"name":"Gena Rowlands","kibbe_type":"Dramatic Classic"},{"name":"Gene Tierney","kibbe_type":"Dramatic"},{"name":"Geraldine Chaplin","kibbe_type":"Gamine"},{"name":"Gina Lollobrigida","kibbe_type":"Romantic"},{"name":"Ginger Rogers","kibbe_type":"Classic"},{"name":"Giselle Bundchen","kibbe_type":"Flamboyant Natural"},{"name":"Gloria Grahame","kibbe_type":"Soft Natural"},{"name":"Gloria Vanderbilt","kibbe_type":"Flamboyant Gamine"},{"name":"Goldie Hawn","kibbe_type":"Soft Natural"},{"name":"Grace Kelly","kibbe_type":"Flamboyant Natural"},{"name":"Greta Garbo","kibbe_type":"Dramatic"},{"name":"Gwyneth Paltrow","kibbe_type":"Flamboyant Natural"},{"name":"Halle Barry","kibbe_type":"Soft Gamine"},{"name":"Heather Locklear","kibbe_type":"Gamine"},{"name":"Hedy Lamarr","kibbe_type":"Theatrical Romantic"},{"name":"Heidi Klum","kibbe_type":"Flamboyant Natural"},{"name":"Helen Mirren","kibbe_type":"Soft Natural"},{"name":"Helena Bonham Carter","kibbe_type":"Romantic"},{"name":"HER (Gabi Wilson)","kibbe_type":"Romantic"},{"name":"Ida Lupino","kibbe_type":"Dramatic Classic"},{"name":"Ingrid Bergman","kibbe_type":"Flamboyant Natural"},{"name":"Isabelle Huppert","kibbe_type":"Classic"},{"name":"Isla Fisher","kibbe_type":"Romantic"},{"name":"Jaclyn Smith","kibbe_type":"Soft Dramatic"},{"name":"Jacqueline de Ribes","kibbe_type":"Soft Dramatic"},{"name":"Jacqueline Kennedy Onassis","kibbe_type":"Dramatic Classic"},{"name":"Jada Pinkett-Smith","kibbe_type":"Theatrical Romantic"},{"name":"Jamie Lee Curtis","kibbe_type":"Dramatic"},{"name":"Jane Fonda","kibbe_type":"Flamboyant Natural"},{"name":"Jane Seymour","kibbe_type":"Theatrical Romantic"},{"name":"Jane Wyman","kibbe_type":"Dramatic Classic"},{"name":"Jean Harlow","kibbe_type":"Theatrical Romantic"},{"name":"Jean Seberg","kibbe_type":"Gamine"},{"name":"Jean Simmons","kibbe_type":"Romantic"},{"name":"Jean Smart","kibbe_type":"Flamboyant Natural"},{"name":"Jennifer Lawrence","kibbe_type":"Flamboyant Natural"},{"name":"Jennifer Lopez","kibbe_type":"Soft Natural"},{"name":"Jennifer Love Hewitt","kibbe_type":"Flamboyant Gamine"},{"name":"Jessica Lange","kibbe_type":"Romantic"},{"name":"Jill Biden","kibbe_type":"Dramatic Classic"},{"name":"Joan Bennett","kibbe_type":"Theatrical Romantic"},{"name":"Joan Blondell","kibbe_type":"Soft Natural"},{"name":"Joan Collins","kibbe_type":"Theatrical Romantic"},{"name":"Joan Crawford","kibbe_type":"Dramatic"},{"name":"Joan Fontaine","kibbe_type":"Soft Classic"},{"name":"Joan Slatterly","kibbe_type":"Soft Classic"},{"name":"Joanne Woodward","kibbe_type":"Soft Natural"},{"name":"Josephine Baker","kibbe_type":"Flamboyant Natural"},{"name":"Judy Collins","kibbe_type":"Soft Natural"},{"name":"Judy Garland","kibbe_type":"Soft Gamine"},{"name":"Judy Holliday","kibbe_type":"Soft Natural"},{"name":"Julia Garner","kibbe_type":"Flamboyant Gamine"},{"name":"Julia Roberts","kibbe_type":"Flamboyant Natural"},{"name":"Julianne Hough","kibbe_type":"Soft Natural"},{"name":"Julie Andrews","kibbe_type":"Soft Natural"},{"name":"Kamala Harris","kibbe_type":"Soft Natural"},{"name":"Karen Allen","kibbe_type":"Natural"},{"name":"Kat Dennings","kibbe_type":"Soft Natural"},{"name":"Kate Moss","kibbe_type":"Dramatic"},{"name":"Kate Winslet","kibbe_type":"Romantic"},{"name":"Katharine Hepburn","kibbe_type":"Dramatic"},{"name":"Katharine Ross","kibbe_type":"Dramatic Classic"},{"name":"Kathleen Turner","kibbe_type":"Dramatic"},{"name":"Katie Holmes","kibbe_type":"Flamboyant Natural"},{"name":"Katy Jurado","kibbe_type":"Dramatic"},{"name":"Katy Perry","kibbe_type":"Soft Natural"},{"name":"Kelly Osbourne","kibbe_type":"Flamboyant Gamine"},{"name":"Kiera Knightley","kibbe_type":"Dramatic"},{"name":"Kim Basinger","kibbe_type":"Soft Natural"},{"name":"Kim Novak","kibbe_type":"Soft Dramatic"},{"name":"Kirsten Dunst","kibbe_type":"Soft Classic"},{"name":"Kristin Wiig","kibbe_type":"Dramatic"},{"name":"Lana Turner","kibbe_type":"Dramatic Classic"},{"name":"Lana Wood","kibbe_type":"Soft Natural"},{"name":"Laura Linney","kibbe_type":"Soft Classic"},{"name":"Lauren Bacall","kibbe_type":"Dramatic"},{"name":"Lee Remick","kibbe_type":"Soft Classic"},{"name":"Lena Horne","kibbe_type":"Soft Dramatic"},{"name":"Lesley Lawson (Twiggy)","kibbe_type":"Flamboyant Gamine"},{"name":"Leslie Caron","kibbe_type":"Soft Gamine"},{"name":"Liliane Montevecchi","kibbe_type":"Flamboyant Gamine"},{"name":"Linda Evans","kibbe_type":"Flamboyant Natural"},{"name":"Linda Gray","kibbe_type":"Dramatic Classic"},{"name":"Linda Ronstadt","kibbe_type":"Soft Gamine"},{"name":"Lisa Lu","kibbe_type":"Flamboyant Natural"},{"name":"Liv Tyler","kibbe_type":"Flamboyant Natural"},{"name":"Liv Ullmann","kibbe_type":"Flamboyant Natural"},{"name":"Liza Minnelli","kibbe_type":"Flamboyant Gamine"},{"name":"Lizzy Caplan","kibbe_type":"Dramatic Classic"},{"name":"Lotus Long","kibbe_type":"Romantic"},{"name":"Louise Brooks","kibbe_type":"Dramatic"},{"name":"Lucie Arnaz","kibbe_type":"Flamboyant Natural"},{"name":"Lucille Ball","kibbe_type":"Flamboyant Natural"},{"name":"Lucy Liu","kibbe_type":"Flamboyant Gamine"},{"name":"Lupe Velez","kibbe_type":"Soft Gamine"},{"name":"Lupito Tovar","kibbe_type":"Soft Natural"},{"name":"Lynda Carter","kibbe_type":"Flamboyant Natural"},{"name":"Lynn Redgrave","kibbe_type":"Flamboyant Natural"},{"name":"Madhubala","kibbe_type":"Flamboyant Natural"},{"name":"Madonna","kibbe_type":"Romantic"},{"name":"Mae West","kibbe_type":"Soft Dramatic"},{"name":"Maggie Siff","kibbe_type":"Dramatic Classic"},{"name":"Maggie Smith","kibbe_type":"Dramatic"},{"name":"Maria Callas","kibbe_type":"Soft Dramatic"},{"name":"Maria Felix","kibbe_type":"Flamboyant Natural"},{"name":"Maria Montez","kibbe_type":"Flamboyant Natural"},{"name":"Maria Shriver","kibbe_type":"Dramatic Classic"},{"name":"Marilyn McCoo","kibbe_type":"Theatrical Romantic"},{"name":"Marilyn Monroe","kibbe_type":"Romantic"},{"name":"Marion Cotillard","kibbe_type":"Soft Classic"},{"name":"Marisa Tomei","kibbe_type":"Soft Natural"},{"name":"Marlene Dietrich","kibbe_type":"Soft Dramatic"},{"name":"Mary Martin","kibbe_type":"Soft Gamine"},{"name":"Mary Pickford","kibbe_type":"Soft Gamine"},{"name":"Mary-Kate Olsen","kibbe_type":"Soft Gamine"},{"name":"Maylia Fong","kibbe_type":"Theatrical Romantic"},{"name":"Meredith Baxter Birney","kibbe_type":"Soft Classic"},{"name":"Merle Oberon","kibbe_type":"Soft Classic"},{"name":"Meryl Streep","kibbe_type":"Soft Classic"},{"name":"Michelle Dockery","kibbe_type":"Dramatic"},{"name":"Michelle Lee","kibbe_type":"Soft Dramatic"},{"name":"Michelle Obama","kibbe_type":"Flamboyant Natural"},{"name":"Michelle Yeoh","kibbe_type":"Dramatic Classic"},{"name":"Mila Kunis","kibbe_type":"Theatrical Romantic"},{"name":"Mitzi Gaynor","kibbe_type":"Flamboyant Natural"},{"name":"Miyoshi Umeki","kibbe_type":"Flamboyant Gamine"},{"name":"Molly Ringwald","kibbe_type":"Soft Natural"},{"name":"Morgan Brittany","kibbe_type":"Theatrical Romantic"},{"name":"Morgan Fairchild","kibbe_type":"Theatrical Romantic"},{"name":"Nancy Kwan","kibbe_type":"Soft Classic"},{"name":"Nancy Wilson","kibbe_type":"Dramatic Classic"},{"name":"Naomi Watts","kibbe_type":"Soft Classic"},{"name":"Nargis Dutt","kibbe_type":"Soft Natural"},{"name":"Nastassja Kinski","kibbe_type":"Flamboyant Gamine"},{"name":"Natalie Dormer","kibbe_type":"Flamboyant Natural"},{"name":"Natalie Wood","kibbe_type":"Soft Gamine"},{"name":"Nicole Kidman","kibbe_type":"Flamboyant Natural"},{"name":"Nina Mae McKinney","kibbe_type":"Soft Classic"},{"name":"Norma Shearer","kibbe_type":"Soft Classic"},{"name":"Octavia Spencer","kibbe_type":"Soft Gamine"},{"name":"Olivia Culpo","kibbe_type":"Dramatic"},{"name":"Olivia de Havilland","kibbe_type":"Soft Classic"},{"name":"Olivia Munn","kibbe_type":"Dramatic Classic"},{"name":"P!nk","kibbe_type":"Soft Natural"},{"name":"Pat Benetar","kibbe_type":"Gamine"},{"name":"Pattie LuPone","kibbe_type":"Flamboyant Gamine"},{"name":"Paulette Goddard","kibbe_type":"Gamine"},{"name":"Penelope Cruz","kibbe_type":"Flamboyant Gamine"},{"name":"Phylicia Rashad","kibbe_type":"Dramatic Classic"},{"name":"Polly Bergen","kibbe_type":"Dramatic Classic"},{"name":"Rachel Weisz","kibbe_type":"Soft Dramatic"},{"name":"Raquel Welch","kibbe_type":"Soft Dramatic"},{"name":"Reese Witherspoon","kibbe_type":"Soft Gamine"},{"name":"Rekha","kibbe_type":"Romantic"},{"name":"Renee Torres","kibbe_type":"Romantic"},{"name":"Renee Zellweger","kibbe_type":"Soft Natural"},{"name":"Rita Hayworth","kibbe_type":"Soft Dramatic"},{"name":"Rita Moreno","kibbe_type":"Flamboyant Gamine"},{"name":"Rosalind Russell","kibbe_type":"Flamboyant Natural"},{"name":"Roseanna Arquette","kibbe_type":"Gamine"},{"name":"Sabrina Carpenter","kibbe_type":"Soft Gamine"},{"name":"Sally Field","kibbe_type":"Soft Gamine"},{"name":"Salma Hayek","kibbe_type":"Theatrical Romantic"},{"name":"Saloma","kibbe_type":"Soft Dramatic"},{"name":"Sandra Bullock","kibbe_type":"Soft Natural"},{"name":"Sandra Milo","kibbe_type":"Soft Dramatic"},{"name":"Sara Montiel","kibbe_type":"Soft Dramatic"},{"name":"Sarah Jessica Parker","kibbe_type":"Flamboyant Natural"},{"name":"Sarah, Duchess of York (Furgie)","kibbe_type":"Soft Natural"},{"name":"Scarlett Johansson","kibbe_type":"Soft Natural"},{"name":"Selena Gomez","kibbe_type":"Theatrical Romantic"},{"name":"Shari Belafonte","kibbe_type":"Flamboyant Gamine"},{"name":"Sharmila Tagore","kibbe_type":"Theatrical Romantic"},{"name":"Shelley Winters","kibbe_type":"Soft Natural"},{"name":"Sheryl Lee Ralph","kibbe_type":"Dramatic"},{"name":"Shirley MacLaine","kibbe_type":"Flamboyant Natural"},{"name":"Shohreh Aghdashloo","kibbe_type":"Soft Dramatic"},{"name":"Sissy Spacek","kibbe_type":"Soft Natural"},{"name":"Sofia Vergara","kibbe_type":"Soft Dramatic"},{"name":"Sophia Loren","kibbe_type":"Soft Dramatic"},{"name":"Stephanie Powers","kibbe_type":"Soft Natural"},{"name":"Susan Hayward","kibbe_type":"Soft Gamine"},{"name":"Susan Sarandon","kibbe_type":"Romantic"},{"name":"Suzanne Pleshette","kibbe_type":"Dramatic Classic"},{"name":"Taylor Swift","kibbe_type":"Dramatic"},{"name":"Terri Garr","kibbe_type":"Soft Natural"},{"name":"Thandiwe Newton","kibbe_type":"Soft Gamine"},{"name":"Tilda Swinton","kibbe_type":"Dramatic"},{"name":"Tina Turner","kibbe_type":"Flamboyant Gamine"},{"name":"Tracee Ellis Ross","kibbe_type":"Flamboyant Natural"},{"name":"Tracy Scoggins","kibbe_type":"Dramatic Classic"},{"name":"Uma Thurman","kibbe_type":"Flamboyant Natural"},{"name":"Valerie Perrine","kibbe_type":"Soft Dramatic"},{"name":"Vanessa Redgrave","kibbe_type":"Flamboyant Natural"},{"name":"Veronica Lake","kibbe_type":"Soft Classic"},{"name":"Victoria Principal","kibbe_type":"Soft Gamine"},{"name":"Vivien Leigh","kibbe_type":"Theatrical Romantic"},{"name":"Winona Ryder","kibbe_type":"Soft Gamine"},{"name":"Zooey Deschanel","kibbe_type":"Flamboyant Gamine"}];
+
+// Type config: position on the yin-yang / vertical-compact plane
+// x: 0=yang, 1=yin  |  y: 0=elongated, 1=compact
+const TYPE_CONFIG = {
+  "Dramatic":           { x: 0.10, y: 0.18, color: "#7eb8da", glow: "rgba(126,184,218,0.35)" },
+  "Soft Dramatic":      { x: 0.24, y: 0.22, color: "#8b9fd4", glow: "rgba(139,159,212,0.35)" },
+  "Flamboyant Natural": { x: 0.14, y: 0.43, color: "#d4a96a", glow: "rgba(212,169,106,0.35)" },
+  "Natural":            { x: 0.28, y: 0.48, color: "#b8a878", glow: "rgba(184,168,120,0.35)" },
+  "Soft Natural":       { x: 0.40, y: 0.50, color: "#d4b896", glow: "rgba(212,184,150,0.35)" },
+  "Dramatic Classic":   { x: 0.42, y: 0.32, color: "#a8b4c8", glow: "rgba(168,180,200,0.35)" },
+  "Classic":            { x: 0.52, y: 0.35, color: "#c0c0c8", glow: "rgba(192,192,200,0.35)" },
+  "Soft Classic":       { x: 0.62, y: 0.38, color: "#c4aec8", glow: "rgba(196,174,200,0.35)" },
+  "Flamboyant Gamine":  { x: 0.22, y: 0.72, color: "#6ec4b0", glow: "rgba(110,196,176,0.35)" },
+  "Gamine":             { x: 0.38, y: 0.70, color: "#78c89a", glow: "rgba(120,200,154,0.35)" },
+  "Soft Gamine":        { x: 0.54, y: 0.74, color: "#9ac8a8", glow: "rgba(154,200,168,0.35)" },
+  "Theatrical Romantic": { x: 0.74, y: 0.62, color: "#d4889c", glow: "rgba(212,136,156,0.35)" },
+  "Romantic":           { x: 0.86, y: 0.72, color: "#d47088", glow: "rgba(212,112,136,0.35)" },
+};
+
+// Seeded random for consistent layouts
+function seededRandom(seed) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
+  }
+  return function() {
+    h = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
+    h = Math.imul(h ^ (h >>> 13), 0x45d9f3b);
+    h = (h ^ (h >>> 16)) >>> 0;
+    return h / 4294967296;
+  };
+}
+
+// Background star field
+function drawStarField() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Deep space gradient
+  const grad = ctx.createRadialGradient(
+    canvas.width * 0.3, canvas.height * 0.4, 0,
+    canvas.width * 0.3, canvas.height * 0.4, canvas.width * 0.8
+  );
+  grad.addColorStop(0, '#0c1024');
+  grad.addColorStop(0.5, '#080c18');
+  grad.addColorStop(1, '#04060c');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Subtle nebula patches
+  const nebulae = [
+    { x: 0.2, y: 0.3, r: 0.25, color: 'rgba(60,80,140,0.04)' },
+    { x: 0.7, y: 0.6, r: 0.3, color: 'rgba(140,70,100,0.03)' },
+    { x: 0.5, y: 0.5, r: 0.4, color: 'rgba(80,100,120,0.02)' },
+  ];
+  nebulae.forEach(n => {
+    const ng = ctx.createRadialGradient(
+      n.x * canvas.width, n.y * canvas.height, 0,
+      n.x * canvas.width, n.y * canvas.height, n.r * canvas.width
+    );
+    ng.addColorStop(0, n.color);
+    ng.addColorStop(1, 'transparent');
+    ctx.fillStyle = ng;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  });
+
+  // Background stars (tiny, dim)
+  const rng = seededRandom('starfield');
+  for (let i = 0; i < 400; i++) {
+    const x = rng() * canvas.width;
+    const y = rng() * canvas.height;
+    const size = rng() * 1.2 + 0.3;
+    const alpha = rng() * 0.4 + 0.1;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,210,230,${alpha})`;
+    ctx.fill();
+  }
+}
+
+// Build the constellation
+function buildConstellation() {
+  const layer = document.getElementById('constellation-layer');
+  const svg = document.getElementById('lines-svg');
+  const legend = document.getElementById('legend');
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+
+  // Margins
+  const mx = 120, my = 100;
+  const usableW = W - mx * 2;
+  const usableH = H - my * 2;
+
+  // Group celebrities by type
+  const groups = {};
+  DATA.forEach(d => {
+    if (!groups[d.kibbe_type]) groups[d.kibbe_type] = [];
+    groups[d.kibbe_type].push(d.name);
+  });
+
+  const allStars = []; // {x, y, type, name}
+
+  // Place each type
+  Object.entries(TYPE_CONFIG).forEach(([type, cfg]) => {
+    const members = groups[type] || [];
+    const cx = mx + cfg.x * usableW;
+    const cy = my + cfg.y * usableH;
+
+    // Scatter radius scales with group size
+    const scatterR = Math.min(Math.sqrt(members.length) * 14, 80);
+
+    // Type label
+    const label = document.createElement('div');
+    label.className = 'type-label';
+    label.style.left = (cx - 40) + 'px';
+    label.style.top = (cy - scatterR - 24) + 'px';
+    label.style.color = cfg.color;
+    label.style.textShadow = `0 0 20px ${cfg.glow}`;
+    label.innerHTML = `${type}<span class="type-count">${members.length}</span>`;
+    layer.appendChild(label);
+
+    // Place stars
+    members.forEach((name, i) => {
+      const rng = seededRandom(name + type);
+      const angle = rng() * Math.PI * 2;
+      const dist = Math.sqrt(rng()) * scatterR;
+      const x = cx + Math.cos(angle) * dist;
+      const y = cy + Math.sin(angle) * dist;
+
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.dataset.type = type;
+      star.style.left = x + 'px';
+      star.style.top = y + 'px';
+
+      const brightness = 0.6 + rng() * 0.4;
+      star.style.backgroundColor = cfg.color;
+      star.style.opacity = brightness;
+      star.style.boxShadow = `0 0 ${4 + rng() * 6}px ${cfg.glow}`;
+      star.style.setProperty('--glow', cfg.glow);
+
+      // Tooltip
+      const tooltip = document.createElement('div');
+      tooltip.className = 'star-tooltip';
+      tooltip.textContent = name;
+      tooltip.style.color = cfg.color;
+      tooltip.style.backgroundColor = 'rgba(6,8,15,0.9)';
+      tooltip.style.border = `1px solid ${cfg.color}33`;
+      star.appendChild(tooltip);
+
+      layer.appendChild(star);
+      allStars.push({ x, y, type, name });
+    });
+  });
+
+  // Draw constellation lines (connect nearest neighbors within each type)
+  const svgNS = "http://www.w3.org/2000/svg";
+  Object.entries(TYPE_CONFIG).forEach(([type, cfg]) => {
+    const stars = allStars.filter(s => s.type === type);
+    if (stars.length < 2) return;
+
+    // Minimum spanning tree for clean constellation lines
+    const connected = new Set([0]);
+    const edges = [];
+
+    while (connected.size < stars.length) {
+      let bestDist = Infinity;
+      let bestFrom = -1, bestTo = -1;
+
+      for (const from of connected) {
+        for (let to = 0; to < stars.length; to++) {
+          if (connected.has(to)) continue;
+          const dx = stars[from].x - stars[to].x;
+          const dy = stars[from].y - stars[to].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < bestDist) {
+            bestDist = d;
+            bestFrom = from;
+            bestTo = to;
+          }
+        }
+      }
+
+      if (bestTo === -1) break;
+      connected.add(bestTo);
+      edges.push([bestFrom, bestTo]);
+    }
+
+    edges.forEach(([a, b]) => {
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', stars[a].x);
+      line.setAttribute('y1', stars[a].y);
+      line.setAttribute('x2', stars[b].x);
+      line.setAttribute('y2', stars[b].y);
+      line.setAttribute('stroke', cfg.color);
+      line.setAttribute('stroke-width', '0.5');
+      line.setAttribute('stroke-opacity', '0.12');
+      line.dataset.type = type;
+      svg.appendChild(line);
+    });
+  });
+
+  // Legend
+  const legendHeader = document.createElement('div');
+  legendHeader.className = 'legend-header';
+  legendHeader.textContent = 'Constellations';
+  legend.appendChild(legendHeader);
+
+  // Order: yang to yin
+  const typeOrder = [
+    "Dramatic", "Soft Dramatic",
+    "Flamboyant Natural", "Natural", "Soft Natural",
+    "Dramatic Classic", "Classic", "Soft Classic",
+    "Flamboyant Gamine", "Gamine", "Soft Gamine",
+    "Theatrical Romantic", "Romantic"
+  ];
+
+  typeOrder.forEach(type => {
+    const cfg = TYPE_CONFIG[type];
+    const count = (groups[type] || []).length;
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<span class="dot" style="background:${cfg.color};box-shadow:0 0 4px ${cfg.glow}"></span>${type} <span style="opacity:0.4">${count}</span>`;
+
+    item.addEventListener('mouseenter', () => {
+      document.body.classList.add('highlight-mode');
+      document.querySelectorAll(`.star[data-type="${type}"]`).forEach(s => s.classList.add('highlighted'));
+      document.querySelectorAll(`line[data-type="${type}"]`).forEach(l => l.classList.add('highlighted'));
+    });
+
+    item.addEventListener('mouseleave', () => {
+      document.body.classList.remove('highlight-mode');
+      document.querySelectorAll('.star.highlighted').forEach(s => s.classList.remove('highlighted'));
+      document.querySelectorAll('line.highlighted').forEach(l => l.classList.remove('highlighted'));
+    });
+
+    legend.appendChild(item);
+  });
+}
+
+// Twinkling animation
+function twinkle() {
+  const stars = document.querySelectorAll('.star');
+  const now = Date.now();
+  stars.forEach((star, i) => {
+    const phase = (now * 0.001 + i * 0.7) % (Math.PI * 2);
+    const flicker = 0.7 + Math.sin(phase) * 0.3;
+    star.style.opacity = flicker;
+  });
+  requestAnimationFrame(twinkle);
+}
+
+// Init
+window.addEventListener('load', () => {
+  drawStarField();
+  buildConstellation();
+  twinkle();
+});
+
+window.addEventListener('resize', () => {
+  const layer = document.getElementById('constellation-layer');
+  const svg = document.getElementById('lines-svg');
+  layer.innerHTML = '';
+  svg.innerHTML = '';
+  drawStarField();
+  buildConstellation();
+});
+</script>
+</body>
+</html>

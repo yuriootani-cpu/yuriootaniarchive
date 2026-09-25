@@ -81,6 +81,13 @@ export const projects = [
     type: "comic",
     link: "/codex/"
   }
+  ,{
+    id: 11,
+    name: "Kibbe/Kitchener Facial Analysis Study",
+    thumbnail: "/images/facespace-heads.jpg", images: [{src: "/images/facespace-heads.jpg", alt: "Average heads for the three shapes, exaggerated 5x"}, {src: "/images/facespace-sky-shape.jpg", alt: "Constellation of 559 faces colored by shape"}, {src: "/images/facespace-sky-kibbe.jpg", alt: "Soft Natural faces scattered across the constellation"}, {src: "/images/facespace-verdict.jpg", alt: "Kibbe and Kitchener results: no signal"}],
+    description: "Do Kibbe and Kitchener face types show up in actual face geometry?",
+    longDescription: "i was curious whether kibbe and kitchener facial essences are grounded in anything real, or purely vibe based. so i took 316 celebrities the style community has already typed (from a fan-kept spreadsheet of celebrity kibbe types and kitchener essences) and ran one photo of each through DECA, a model that estimates a 3d head shape from a single photo. then i shrank each face's 100 shape numbers down (PCA, then UMAP) so every face could be plotted as a star on a 3d map.\n\nunfortunately, neither kibbe nor kitchener lines up with actual face shape. faces with the same type don't sit near each other any more than random chance would put them.\n\nso i added 194 korean celebrities and 49 world leaders to see if \"western\" and \"eastern\" faces separate. they partly do: when faces are sorted by shape alone, one group leans western and one leans east asian.\n\nthe coolest part: a third shape showed up that doesn't follow kibbe, kitchener, or where anyone is from. it pulls 70 faces from all three groups, including jang wonyoung, p!nk, angelina jolie and emmanuel macron. still no idea what it is.",
+    type: "research",
+    link: "/facespace/"
+  }
 ]
-
-
