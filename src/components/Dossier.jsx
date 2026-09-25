@@ -1,7 +1,7 @@
 import ArrowUpRight from './ArrowUpRight'
 import ProjectImages from './ProjectImages'
-const formats = { app: 'Web app', taxonomy: 'Classification taxonomy', visual: 'Visual experiment', slides: 'Presentation', video: 'Moving image', writing: 'Short fiction', comic: 'Webcomic', other: 'Concept / invitation' }
-const actions = { app: 'Visit Yomi', taxonomy: 'Open the spreadsheet', visual: 'Explore the images', slides: 'Open the presentation', video: 'Watch the project', writing: 'Read the story', comic: 'Read the comic', other: 'Open the invitation' }
+const formats = { app: 'Web app', taxonomy: 'Classification taxonomy', visual: 'Visual experiment', slides: 'Presentation', video: 'Moving image', writing: 'Short fiction', comic: 'Webcomic', research: 'Research study', other: 'Concept / invitation' }
+const actions = { app: 'Visit Yomi', taxonomy: 'Open the spreadsheet', visual: 'Explore the images', slides: 'Open the presentation', video: 'Watch the project', writing: 'Read the story', comic: 'Read the comic', research: 'Open the study', other: 'Open the invitation' }
 export default function Dossier({ project, index, phase, mark, authorized, onAnother, ref }) {
   return <article className="project-sheet" ref={ref} tabIndex={-1} inert={phase === 'opening' ? true : undefined} aria-label="Revealed project">
     <div className="dossier-body">
