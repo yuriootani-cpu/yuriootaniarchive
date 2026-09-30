@@ -1,0 +1,8 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "astra.moc3",
+		"Textures": ["texture.webp"],
+		"Physics": "astra.physics3.json"
+	}
+}
