@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live2D Cubism Vtuber Model · Y / O</title>
+<meta name="description" content="gpt-6 astra designed a vtuber for itself. the rigged live2d model, running live in your browser.">
+<meta name="theme-color" content="#f7f4f1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f7f4f1; --sheet:#fffaf7; --blush:#ebcad2; --lav:#e8e3ec; --line:#c9c5d5; --line-2:#ddd8e3;
+  --ink:#292832; --ink-2:#655766; --muted:#8a7f8b; --plum:#754454; --rose:#b66e82;
+  --grot:'Space Grotesk',system-ui,sans-serif; --sans:'DM Sans',system-ui,sans-serif; --serif:Georgia,'Times New Roman',serif;
+  --hand:'Segoe Print','Bradley Hand','Comic Sans MS',cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--paper);overflow-x:hidden}
+body{background:radial-gradient(ellipse at 50% 0%,#f3e8ee 0,var(--paper) 55%) no-repeat,var(--paper);color:var(--ink);font:16px/1.7 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--plum);text-underline-offset:3px;text-decoration-thickness:1px}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+.wide{max-width:1080px;margin:0 auto;padding:0 20px}
+.label{font:500 10px/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+.masthead{height:84px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line-2);padding:0 5vw;background:rgba(247,244,241,.8);backdrop-filter:blur(6px);position:sticky;top:0;z-index:20}
+.masthead a{color:var(--ink-2);text-decoration:none;font-size:13px}
+.masthead a:hover{color:var(--plum)}
+.seal{width:52px;height:52px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font:400 17px/1 var(--serif);color:var(--ink);text-decoration:none!important;position:relative}
+.seal:after{content:"";position:absolute;inset:3px;border:1px solid var(--line-2);border-radius:50%}
+.seal small{display:block;font:500 5px var(--sans);letter-spacing:.14em;margin-top:3px;text-align:center;color:var(--muted)}
+
+.hero{padding:64px 0 28px}
+.hero .wrap{display:flow-root}
+.hero .note{clear:both}
+.file{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:30px}
+h1{font:400 clamp(44px,8.5vw,84px)/.95 var(--grot);letter-spacing:-.045em;margin:14px 0 26px}
+h1 em{font:italic 400 .82em var(--serif);letter-spacing:-.02em;color:var(--plum)}
+.lede{font-size:19px;line-height:1.65;max-width:600px}
+.lede+.lede{margin-top:14px}
+.postmark{position:relative;float:right;margin:4px 8px 16px 24px;width:118px;height:118px;border:1px solid var(--rose);border-radius:50%;display:grid;place-items:center;text-align:center;transform:rotate(12deg);color:var(--rose);font:500 11px/1.35 var(--sans);letter-spacing:.14em;opacity:.8}
+.postmark:before{content:"";position:absolute;inset:5px;border:1px dashed var(--blush);border-radius:50%}
+.postmark b{display:block;font:400 26px/1 var(--grot);letter-spacing:-.02em}
+@media (max-width:760px){.postmark{display:none}}
+
+/* the live stage */
+.stage-wrap{padding:10px 0 20px}
+.stage-card{background:var(--sheet);border:1px solid var(--line-2);box-shadow:0 30px 60px -36px rgba(117,68,84,.45)}
+.stage-meta{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line-2)}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--rose);margin-right:7px;vertical-align:1px;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+#stage{position:relative;height:min(76vh,780px);min-height:460px;background:radial-gradient(ellipse at 50% 38%,#fbf6f7 0,#efe6ee 45%,var(--lav) 100%);touch-action:pan-y;cursor:crosshair;overflow:hidden}
+#stage canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .8s ease}
+#stage.ready canvas{opacity:1}
+#stage-status{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;font:italic 17px var(--serif);color:var(--muted)}
+.hint{position:absolute;left:16px;bottom:14px;font:italic 15px/1.3 var(--hand);color:var(--plum);opacity:.75;pointer-events:none}
+.controls{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;padding:14px 16px;border-top:1px solid var(--line-2)}
+.group{display:flex;flex-direction:column;gap:6px}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);background:var(--sheet)}
+.seg button{background:none;border:0;color:var(--ink-2);font:500 12px var(--sans);padding:8px 13px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--plum);color:#fff}
+.seg button:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+
+section{padding:56px 0}
+.sec-head{display:flex;gap:14px;align-items:baseline;border-top:1px solid var(--line);padding-top:14px;margin-bottom:22px}
+h2{font:400 clamp(30px,5.2vw,42px)/1.05 var(--grot);letter-spacing:-.035em;margin:0 0 20px}
+h2 em{font:italic 400 .9em var(--serif);color:var(--plum);letter-spacing:-.01em}
+p+p{margin-top:14px}
+h3{font:500 10px/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:38px 0 12px}
+.num{font-family:var(--grot);font-weight:500}
+.note{background:var(--sheet);border:1px solid var(--line-2);padding:20px 22px;margin:28px 0 0;transform:rotate(-.6deg);box-shadow:0 18px 40px -26px rgba(117,68,84,.35)}
+.note .label{display:flex;justify-content:space-between;margin-bottom:10px}
+.note p{font-size:15px;color:var(--ink-2)}
+.credit{font-size:13px;color:var(--muted);margin-top:28px}
+
+footer{border-top:1px solid var(--line-2);margin-top:30px;padding:26px 5vw 60px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font:500 10px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+footer a{color:var(--muted);text-decoration:none}
+footer .signed{font:italic 17px var(--hand);letter-spacing:0;text-transform:none;color:var(--plum)}
+@media (max-width:600px){#stage{height:68vh;min-height:420px}.controls{gap:12px}.seg button{padding:8px 11px}}
+</style>
+</head>
+<body>
+
+<nav class="masthead">
+  <a href="/">Gallery ↗</a>
+  <a class="seal" href="/" aria-label="Y / O archive home"><span>Y/O<small>ARCHIVE</small></span></a>
+  <a href="#lessons">Lessons ↓</a>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="file label"><span>Y / O · Personal archive</span><span>File 011</span></div>
+    <div class="label">Works, experiments &amp; other things</div>
+    <h1>Live2D Cubism <em>vtuber model</em></h1>
+    <div class="postmark" aria-hidden="true"><div><b>113</b>PIECES<br>30 PARAMS</div></div>
+    <p class="lede">gpt-6 astra designed a vtuber for itself.</p>
+    <div class="note">
+      <div class="label"><span>From my notebook</span><span>×</span></div>
+      <p>another piece of the astra tiktok doomscrolling project. when doing a pilot i realized it could make chibi vtuber models, so i was curious if it could make a decently professional-looking one like the ones vtubers use. the model was designed by astra, but the rigging was done by hand.</p>
+      <p>i do want to try other programs that allow for more automation in rigging. don't see why it shouldn't work. cmo3 (cubism's project file) is proprietary and undocumented, so building a rig somewhere else and importing it isn't really an option. people have partly reverse engineered it, but nothing official. cubism 5.4's alpha does open an api that can set up the rig's structure (parameters, deformers, parenting), just not the actual shaping, so that's probably the way in.</p>
+      <p>this made me curious about 3d models as well, but we'll see if i ever get around to that.</p>
+    </div>
+  </div>
+</header>
+
+<div class="stage-wrap">
+  <div class="wide">
+    <div class="stage-card">
+      <div class="stage-meta label"><span><i class="live-dot" aria-hidden="true"></i>Running in your browser</span><span>Live2D Cubism</span></div>
+      <div id="stage" aria-label="Astra, a live animated character. Move your pointer over her and she follows it.">
+        <div id="stage-status">waking her up…</div>
+        <div class="hint" aria-hidden="true">move over her, she'll look at you</div>
+      </div>
+      <div class="controls">
+        <div class="group"><span class="label">Mode</span>
+          <div class="seg"><button data-mode="live">Live</button><button data-mode="ragdoll">Ragdoll</button></div></div>
+        <div class="group"><span class="label">Framing</span>
+          <div class="seg"><button data-framing="face">Face</button><button data-framing="bust">Bust</button><button data-framing="full">Full</button></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="lessons">
+  <div class="wrap">
+    <div class="sec-head label"><span>01</span><span>Lessons learned, in no particular order</span></div>
+    <h2>if i did it <em>again</em></h2>
+
+    <h3>the art</h3>
+    <p>starting with a concept drawing is good enough. it's ai, yes, but gpt-6 astra is very competent at photoshop. like... super good.</p>
+    <p>live2d cubism needs every movable part on its own layer. this file ended up with <span class="num">113</span> pieces on a <span class="num">4000×6000</span>px canvas. it's extremely surprising this model can work with files this huge.</p>
+    <p>when generating the model, make sure it's more or less symmetrical. cubism can mirror, so you don't have to rig everything twice (like me..).</p>
+    <p>have a rough idea of which parts move before you start. fortunately this model didn't have much (she's female but she's flat LOL). sorting that out up front, before rigging and fiddling with the physics, is very important.</p>
+    <p>it's also good to know which pieces are cropped badly. if i could start over, i'd have astra redo the hair cropping. it's cropped for convenience in photoshop, not for convenience in cubism.</p>
+    <p>although astra is very good at photoshop, small edits to pieces sometimes throw the color off or kind of break stuff. i had opus 5.5 do the shading and color correction; for some reason i couldn't get astra to do it competently. probably a skill issue, but heads up if it isn't.</p>
+    <p>i didn't get into expressions or changeable outfits, but if you use ai for the artwork, consider them up front. i would've added them later, but i kind of got to "eh, this is good enough" and called it.</p>
+
+    <h3>keeping track of the pieces</h3>
+    <p>to manage all the pieces, i had it make a spreadsheet of every part with a coordinate system for where each one goes, and eventually a tracker for which parts go where. there's a lot of nesting in cubism (body z rotation &gt; body x rotation &gt; breath idle &amp; each piece of the body &gt; head z rotation &gt; etc. etc.). keeping track of what's childed under what, and which layer it's on, is super helpful.</p>
+    <p>cubism can export the parts and parameters. if you have the original parts list, it's super easy to see which parts you're missing or accidentally deleted or misnamed. creating each parameter and having the llm you're working with remember what goes in it is also very helpful.</p>
+
+    <h3>rigging</h3>
+    <p>unfortunately, you still have to organize and assign parent deformers and whatnot manually (for some reason every file imported backwards, so i had to arrange everything back to front). you also have to assign the deformers to the parameters, and the parameters individually too. very tedious work, i did not enjoy it. it was rewarding to see that i could mold the face rotation pretty decently though, i'd say.</p>
+    <p>if you're really bad at illustration and shape rotating like me, it helps to have accurate references of what, for instance, the head looks like at x=30 degrees. i kind of free-balled it, but llms could probably make "dummy poses" you can just warp the rig to match. this is a 2d representation of a 3d object. if you use cubism's built-in rotation tools, it comes out like paper mario. it looked very bad, so i had to bite the bullet and accept that i'd have to do some 3d modeling.</p>
+    <p>honestly, i don't know what the physics dialogue is for. i asked multiple times and couldn't get it to work or see its purpose. for simple models maybe it isn't necessary. but there's a physics import, and llms can deepfake the physics sheet. idk if it made any difference. who knows.</p>
+
+    <h3>time &amp; tools</h3>
+    <p>honestly, the model with separate psds and stuff can be cooked in a few hours, probably quicker with an efficient pipeline for this type of work. most of the time (~12 hrs raw?) was in cubism.</p>
+    <p>the experimental cubism 5.4 supports direct api usage (though i'm not sure how much). it's likely that in the future you can just mcp your llm into it.</p>
+    <p>if you're putting the model on the web: the player i used (as of writing) only reads models exported as SDK 5.0, so there isn't clean backwards compatibility. live2d's own newer web sdk does read 5.3 exports.</p>
+
+    <p class="credit">Rendered with the Live2D Cubism SDK. Her hair moves with the model's own physics.</p>
+  </div>
+</section>
+
+<footer>
+  <span>Y / O · Personal archive · File 011</span>
+  <span class="signed">– yuri</span>
+  <a href="/">Back to the archive ↗</a>
+</footer>
+
+<script src="vendor/pixi.min.js"></script>
+<script src="astra.js"></script>
+</body>
+</html>

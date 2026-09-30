@@ -90,4 +90,13 @@ export const projects = [
     type: "research",
     link: "/facespace/"
   }
+  ,{
+    id: 12,
+    name: "Live2D Cubism Vtuber Model",
+    thumbnail: "/images/astra-thumb.jpg", images: [{src: "/images/astra-ragdoll.jpg", video: "/images/astra-ragdoll.mp4", alt: "Astra flopping through random poses, her hair and jacket swinging with the physics"}],
+    description: "gpt-6 astra designed a vtuber for itself.",
+    longDescription: "another piece of the astra tiktok doomscrolling project. when doing a pilot i realized it could make chibi vtuber models, so i was curious if it could make a decently professional-looking one like the ones vtubers use. the model was designed by astra, but the rigging was done by hand.\n\ni do want to try other programs that allow for more automation in rigging. don't see why it shouldn't work. cmo3 (cubism's project file) is proprietary and undocumented, so building a rig somewhere else and importing it isn't really an option. people have partly reverse engineered it, but nothing official. cubism 5.4's alpha does open an api that can set up the rig's structure (parameters, deformers, parenting), just not the actual shaping, so that's probably the way in.\n\nthis made me curious about 3d models as well, but we'll see if i ever get around to that.",
+    type: "live2d",
+    link: "/astra/"
+  }
 ]
